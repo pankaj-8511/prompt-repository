@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Prompt Repository - Enterprise Command Center</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#0f172a',
+                        cardbg: '#1e293b',
+                        accent: '#6366f1',
+                        accenthover: '#4f46e5'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="h-full bg-slate-950 text-slate-100 flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 px-6 py-4 flex items-center justify-between shadow-md">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                <i class="fa-solid fa-terminal text-lg"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg tracking-tight text-white flex items-center gap-2">
+                    The Prompt Repository 
+                    <span id="env-badge" class="bg-slate-800 text-emerald-400 text-[10px] px-2 py-0.5 rounded border border-slate-700 font-mono">Cloud / Local Secure</span>
+                </h1>
+                <p class="text-xs text-slate-400">Enterprise AI Command & Knowledge Center</p>
+            </div>
+        </div>
+        <!-- Tier Status, Backup & Upgrade Controls -->
+        <div class="flex items-center gap-3">
+            <!-- Export, Import & Backup Controls -->
+            <div class="hidden sm:flex items-center gap-2 bg-slate-800/80 border border-slate-700 p-1 rounded-xl">
+                <button onclick="openImportModal()" title="Import Prompts from JSON" class="px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-file-import text-emerald-400"></i> Import
+                </button>
+                <div class="w-[1px] h-4 bg-slate-700"></div>
+                <button onclick="exportData('json')" title="Export backup to JSON" class="px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-file-code text-indigo-400"></i> JSON
+                </button>
+                <div class="w-[1px] h-4 bg-slate-700"></div>
+                <button onclick="exportData('csv')" title="Export backup to CSV" class="px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-file-csv text-emerald-400"></i> CSV
+                </button>
+            </div>
+            <div id="tier-badge" class="hidden md:flex items-center gap-2 bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-medium">
+                <i class="fa-solid fa-crown text-amber-400" id="tier-icon"></i>
+                <span id="tier-name" class="text-slate-200">Free Tier</span>
+                <span id="tier-usage" class="text-slate-400 bg-slate-900 px-2 py-0.5 rounded text-[11px]">0 / 10 Blocks</span>
+            </div>
+            
+            <button onclick="openUpgradeModal()" class="bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider hover:from-amber-400 hover:to-amber-500 transition shadow-lg shadow-amber-500/20">
+                <i class="fa-solid fa-bolt mr-1"></i> Upgrade Plan
+            </button>
+        </div>
+    </header>
+    <main class="flex-grow flex overflow-hidden">
+        
+        <!-- Sidebar Categories & Environments -->
+        <aside class="w-72 bg-slate-900/80 border-r border-slate-800 flex flex-col justify-between p-4 hidden md:flex">
+            <div>
+                <!-- Department / Environment Switcher -->
+                <div class="mb-5 pb-4 border-b border-slate-800">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Department / Workspace</label>
+                    <select id="department-select" onchange="switchDepartment(this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 font-medium">
+                        <option value="General">General Workspace</option>
+                        <option value="Engineering">Engineering / Dev Team</option>
+                        <option value="Marketing">Marketing & Growth</option>
+                        <option value="HR & Legal">HR & Legal Compliance</option>
+                    </select>
+                </div>
+                <div class="flex items-center justify-between mb-4 px-2">
+                    <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Categories</h2>
+                    <button onclick="openCategoryModal()" class="text-indigo-400 hover:text-indigo-300 text-xs font-semibold flex items-center gap-1">
+                        <i class="fa-solid fa-plus"></i> New Section
+                    </button>
+                </div>
+                <!-- Category List -->
+                <div id="category-list" class="space-y-1.5 overflow-y-auto max-h-[calc(100vh-280px)] pr-1">
+                    <!-- Dynamic categories populated via JS -->
+                </div>
+            </div>
+            <!-- Quick Security & Storage Footer -->
+            <div class="bg-slate-800/60 border border-slate-700/60 p-3 rounded-xl text-xs space-y-2">
+                <div class="flex justify-between font-medium text-slate-300">
+                    <span>Block Utilization</span>
+                    <span id="sidebar-usage-count">0/10</span>
+                </div>
+                <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
+                    <div id="sidebar-progress-bar" class="bg-indigo-500 h-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+                <div class="flex items-center justify-between pt-1 text-[10px] text-emerald-400">
+                    <span><i class="fa-solid fa-shield-halved mr-1"></i>256-Bit SSL Encrypted</span>
+                    <span class="text-slate-400">VPN Safe</span>
+                </div>
+            </div>
+        </aside>
+        <!-- Main Content Feed -->
+        <section class="flex-grow flex flex-col bg-slate-950 overflow-y-auto p-6 md:p-8">
+            
+            <!-- Top Controls Bar -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 bg-slate-900/50 p-4 rounded-2xl border border-slate-800/80 backdrop-blur">
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <span id="current-category-title" class="text-xl font-bold text-white">All Prompts</span>
+                    <span id="current-category-count" class="bg-indigo-500/20 text-indigo-300 text-xs font-semibold px-2.5 py-1 rounded-full border border-indigo-500/30">0</span>
+                </div>
+                <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+                    <!-- Search Bar -->
+                    <div class="relative flex-grow sm:w-64">
+                        <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Search secure prompts..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 pl-10 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-500">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-500 text-xs"></i>
+                    </div>
+                    <!-- Add Prompt Button -->
+                    <button onclick="openPromptModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-lg shadow-indigo-600/30 flex items-center gap-2 whitespace-nowrap">
+                        <i class="fa-solid fa-plus"></i> Add Prompt
+                    </button>
+                </div>
+            </div>
+            <!-- Prompts Grid Container -->
+            <div id="prompts-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Prompts populated dynamically -->
+            </div>
+            <!-- Empty State -->
+            <div id="empty-state" class="hidden flex-grow flex flex-col items-center justify-center text-center py-20">
+                <div class="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-600 text-2xl mb-4">
+                    <i class="fa-solid fa-folder-open"></i>
+                </div>
+                <h3 class="text-base font-bold text-slate-300 mb-1">No prompts found</h3>
+                <p class="text-slate-500 text-xs max-w-sm mb-6">Create your first secure prompt block in this workspace section.</p>
+                <button onclick="openPromptModal()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-semibold">Add New Prompt</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Add Category Modal -->
+    <div id="category-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-5">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-base text-white">Create New Workspace Section</h3>
+                <button onclick="closeCategoryModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form onsubmit="handleCreateCategory(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1 font-semibold">Section Name</label>
+                    <input type="text" id="new-category-name" required placeholder="e.g., Code Refactoring, Client Proposals..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500">
+                    <p class="text-[10px] text-slate-500 mt-1">Names must be unique and cannot represent prompts of the same nature.</p>
+                </div>
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeCategoryModal()" class="px-4 py-2 rounded-xl text-xs bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl text-xs bg-indigo-600 text-white font-bold hover:bg-indigo-500">Create Section</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Import Prompts Modal -->
+    <div id="import-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-5">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-base text-white">Import Repository Backup</h3>
+                <button onclick="closeImportModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form onsubmit="handleImportData(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1 font-semibold">Select JSON Backup File</label>
+                    <input type="file" id="import-file" accept=".json" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-300 focus:outline-none focus:border-indigo-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500">
+                    <p class="text-[10px] text-slate-500 mt-1">Upload a previously exported JSON backup file to restore or add prompts in bulk.</p>
+                </div>
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeImportModal()" class="px-4 py-2 rounded-xl text-xs bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl text-xs bg-indigo-600 text-white font-bold hover:bg-indigo-500">Import & Merge</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Fill Variables Modal -->
+    <div id="variable-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-5">
+            <div class="flex justify-between items-center">
+                <h3 id="variable-modal-title" class="font-bold text-base text-white">Fill Prompt Variables</h3>
+                <button onclick="closeVariableModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form onsubmit="handleCopyFilledVariables(event)" class="space-y-4">
+                <div id="variable-inputs-container" class="space-y-3 max-h-64 overflow-y-auto pr-1">
+                    <!-- Populated dynamically -->
+                </div>
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeVariableModal()" class="px-4 py-2 rounded-xl text-xs bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl text-xs bg-indigo-600 text-white font-bold hover:bg-indigo-500"><i class="fa-solid fa-copy mr-1.5"></i> Copy Filled Prompt</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- AI Testing Sandbox Drawer -->
+    <div id="sandbox-drawer" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-xl p-6 rounded-3xl shadow-2xl space-y-5 flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-800">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-600/20 text-indigo-400 flex items-center justify-center border border-indigo-500/30">
+                        <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 id="sandbox-title" class="font-bold text-sm text-white">AI Testing Sandbox</h3>
+                        <p class="text-[10px] text-slate-400">Simulate prompt execution in a secure environment</p>
+                    </div>
+                </div>
+                <button onclick="closeSandbox()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <div class="space-y-3 overflow-y-auto flex-grow pr-1">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Prompt Block Under Test</label>
+                    <div id="sandbox-prompt-display" class="bg-slate-950 border border-slate-800 p-3.5 rounded-xl text-xs font-mono text-slate-300 select-all max-h-36 overflow-y-auto"></div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Execution Response Stream</label>
+                    <div id="sandbox-response" class="bg-slate-950 border border-slate-800 p-4 rounded-xl text-xs text-slate-200 min-h-[120px] max-h-48 overflow-y-auto">
+                        <span class="text-slate-500 italic">Simulated AI response stream ready. Click Run Simulation below...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-3 border-t border-slate-800 flex justify-end gap-3">
+                <button type="button" onclick="closeSandbox()" class="px-4 py-2.5 rounded-xl text-xs bg-slate-800 text-slate-300 hover:bg-slate-700">Close</button>
+                <button type="button" onclick="simulateSandboxRun()" class="px-5 py-2.5 rounded-xl text-xs bg-indigo-600 text-white font-bold hover:bg-indigo-500 shadow-lg shadow-indigo-600/30 flex items-center gap-2">
+                    <i class="fa-solid fa-play"></i> Run Simulation
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- Add / Edit Prompt Modal -->
+    <div id="prompt-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-lg p-6 rounded-2xl shadow-2xl space-y-5">
+            <div class="flex justify-between items-center">
+                <h3 id="prompt-modal-title" class="font-bold text-base text-white">Add New Prompt Block</h3>
+                <button onclick="closePromptModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form onsubmit="handleSavePrompt(event)" class="space-y-4">
+                <input type="hidden" id="edit-prompt-id">
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1 font-semibold">Prompt Title</label>
+                    <input type="text" id="prompt-title" required placeholder="e.g., API Architecture Reviewer" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1 font-semibold">Section / Category</label>
+                    <select id="prompt-category" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-xs uppercase tracking-wider text-slate-400 font-semibold">Prompt Text (Strict Single Prompt)</label>
+                        <span class="text-[10px] text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20"><i class="fa-solid fa-triangle-exclamation mr-1"></i>No separators allowed</span>
+                    </div>
+                    <textarea id="prompt-content" rows="6" required oninput="validateNoSeparators(this)" placeholder="Enter standalone prompt here..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono leading-relaxed"></textarea>
+                    <p id="separator-warning" class="text-[11px] text-rose-400 mt-1 hidden"><i class="fa-solid fa-circle-xmark mr-1"></i>Separators detected! You cannot include multiple prompts or delimiter bars in a single block.</p>
+                </div>
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closePromptModal()" class="px-4 py-2 rounded-xl text-xs bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+                    <button type="submit" id="save-prompt-btn" class="px-5 py-2 rounded-xl text-xs bg-indigo-600 text-white font-bold hover:bg-indigo-500">Save Prompt Block</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Upgrade Plan & Secure Checkout Modal -->
+    <div id="upgrade-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-2xl p-7 rounded-3xl shadow-2xl space-y-6 relative">
+            <button onclick="closeUpgradeModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            
+            <div id="pricing-view">
+                <div class="text-center max-w-lg mx-auto mb-6">
+                    <span class="text-indigo-400 text-[10px] font-bold uppercase tracking-widest bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/30">Enterprise Licensing & Pro Tiers</span>
+                    <h3 class="font-bold text-xl text-white mt-2">Scale Your AI Repository</h3>
+                    <p class="text-xs text-slate-400 mt-1">Select your tier or request bulk enterprise licensing for your local intranet or department.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <!-- Free Plan -->
+                    <div class="bg-slate-950 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-slate-400">Starter</span>
+                            <div class="text-xl font-extrabold text-white mt-1">Free</div>
+                            <p class="text-[11px] text-slate-400 mt-2">10 Prompt blocks. Essential starter command center.</p>
+                        </div>
+                        <button onclick="selectPlan('free', 0)" class="mt-6 w-full py-2.5 bg-slate-800 text-slate-300 hover:bg-slate-700 text-xs font-semibold rounded-xl">Current Plan</button>
+                    </div>
+                    <!-- Home Paid Plan -->
+                    <div class="bg-slate-950 border border-indigo-500/50 p-5 rounded-2xl flex flex-col justify-between relative shadow-lg shadow-indigo-500/10">
+                        <span class="absolute -top-2.5 right-4 bg-indigo-600 text-white text-[9px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded">Popular</span>
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-indigo-400">Home Pro</span>
+                            <div class="text-xl font-extrabold text-white mt-1">$9<span class="text-xs text-slate-400 font-normal">/mo</span></div>
+                            <p class="text-[11px] text-slate-400 mt-2">50 Prompt blocks. Unlimited sections & organization.</p>
+                        </div>
+                        <button onclick="selectPlan('home', 9)" class="mt-6 w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow">Select Home Pro</button>
+                    </div>
+                    <!-- Enterprise Plan -->
+                    <div class="bg-slate-950 border border-amber-500/50 p-5 rounded-2xl flex flex-col justify-between relative shadow-lg shadow-amber-500/10">
+                        <span class="absolute -top-2.5 right-4 bg-amber-500 text-slate-950 text-[9px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded">Business</span>
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-amber-400">Enterprise</span>
+                            <div class="text-xl font-extrabold text-white mt-1">$29<span class="text-xs text-slate-400 font-normal">/mo</span></div>
+                            <p class="text-[11px] text-slate-400 mt-2">Unlimited blocks, bulk team licensing & intranet sync.</p>
+                        </div>
+                        <button onclick="selectPlan('enterprise', 29)" class="mt-6 w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-xl shadow">Select Enterprise</button>
+                    </div>
+                </div>
+            </div>
+            <!-- Secure SSL Checkout Form (Initially Hidden) -->
+            <div id="checkout-view" class="hidden space-y-5">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                    <div>
+                        <h4 class="font-bold text-base text-white" id="checkout-title">Secure Checkout - Home Pro ($9/mo)</h4>
+                        <p class="text-[11px] text-slate-400">256-Bit SSL Encrypted Payment Gateway Integration</p>
+                    </div>
+                    <button onclick="backToPricing()" class="text-xs text-indigo-400 hover:underline"><i class="fa-solid fa-arrow-left mr-1"></i> Back</button>
+                </div>
+                <form onsubmit="handleSimulatedPayment(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-wider text-slate-400 mb-1 font-semibold">Cardholder Name</label>
+                        <input type="text" required placeholder="Johnathan Doe" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-wider text-slate-400 mb-1 font-semibold">Card Number (SSL Secured)</label>
+                        <input type="text" required placeholder="•••• •••• •••• 4242" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-wider text-slate-400 mb-1 font-semibold">Expiry Date</label>
+                            <input type="text" required placeholder="MM/YY" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-wider text-slate-400 mb-1 font-semibold">CVV Security Code</label>
+                            <input type="password" required placeholder="123" maxlength="4" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono">
+                        </div>
+                    </div>
+                    <div class="bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl flex items-center gap-2.5 text-xs text-emerald-300">
+                        <i class="fa-solid fa-shield-check text-emerald-400 text-sm"></i>
+                        <span>Payment data is tokenized securely. Compliant with enterprise security standards.</span>
+                    </div>
+                    <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-extrabold text-xs uppercase tracking-widest rounded-xl transition shadow-xl shadow-emerald-500/20">
+                        Authorize Payment & Instant Upgrade
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 border border-slate-700 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs">
+        <i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
+        <span id="toast-message">Prompt copied to clipboard!</span>
+    </div>
+    <script>
+        // Application State Data Model
+        let appState = {
+            tier: 'free', // 'free' (10 blocks), 'home' (50 blocks), 'enterprise' (unlimited)
+            department: 'General',
+            categories: ['Finance', 'Personal', 'Creativity', 'HR', 'Payroll', 'Inventory Management', 'Email drafts'],
+            currentCategory: 'All',
+            searchQuery: '',
+            prompts: [
+                { id: 1, department: 'General', title: 'Q3 Financial Variance Analysis', category: 'Finance', content: 'Act as a Senior Financial Analyst. Analyze the following budget variance report and provide 3 key risk factors and cost-saving recommendations: [Insert Data]' },
+                { id: 2, department: 'General', title: 'Weekly Productivity & Habit Review', category: 'Personal', content: 'Review my weekly goals and habits. Ask me 3 probing questions to help me identify bottlenecks and optimize my routines for next week.' },
+                { id: 3, department: 'General', title: 'Sci-Fi Worldbuilding Prompts', category: 'Creativity', content: 'Generate a unique sci-fi cyberpunk setting featuring a neon-drenched metropolis powered by ancient geothermal energy.' },
+                { id: 4, department: 'General', title: 'Employee Performance Review Feedback', category: 'HR', content: 'Draft constructive, empathetic performance feedback for a team member who exceeded sales targets but struggled with cross-functional communication.' },
+                { id: 5, department: 'General', title: 'Payroll Tax Compliance Checklist', category: 'Payroll', content: 'List the essential monthly payroll tax compliance steps required for multi-state remote employees in the United States.' }
+            ]
+        };
+        const tierLimits = {
+            free: 10,
+            home: 50,
+            enterprise: Infinity
+        };
+        let selectedCheckoutPlan = { name: 'home', price: 9 };
+        // Initialize App on Load
+        window.onload = function() {
+            loadFromLocalStorage();
+            renderAll();
+        };
+        function saveToLocalStorage() {
+            localStorage.setItem('prompt_repository_enterprise_state', JSON.stringify(appState));
+        }
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem('prompt_repository_enterprise_state');
+            if (saved) {
+                try {
+                    appState = JSON.parse(saved);
+                    // Ensure new fields exist in legacy state
+                    if (!appState.favorites) appState.favorites = [];
+                } catch (e) {
+                    console.error("Failed to load local storage", e);
+                }
+            }
+        }
+        // Render All UI Elements
+        function renderAll() {
+            renderTierBadge();
+            renderCategoryList();
+            renderCategoryDropdown();
+            renderPrompts();
+            updateUsageStats();
+        }
+        // Department Switcher (Intranet / Environment Simulation)
+        function switchDepartment(dept) {
+            appState.department = dept;
+            document.getElementById('env-badge').innerText = `Workspace: ${dept}`;
+            renderAll();
+            showToast(`Switched active environment to ${dept}`);
+        }
+        // Tier Management & Checkout
+        function renderTierBadge() {
+            const nameEl = document.getElementById('tier-name');
+            const iconEl = document.getElementById('tier-icon');
+            if (appState.tier === 'free') {
+                nameEl.innerText = "Free Tier";
+                iconEl.className = "fa-solid fa-seedling text-emerald-400";
+            } else if (appState.tier === 'home') {
+                nameEl.innerText = "Home Pro ($9)";
+                iconEl.className = "fa-solid fa-crown text-indigo-400";
+            } else {
+                nameEl.innerText = "Enterprise ($29)";
+                iconEl.className = "fa-solid fa-building text-amber-400";
+            }
+        }
+        function selectPlan(planName, price) {
+            if (planName === 'free') {
+                appState.tier = 'free';
+                saveToLocalStorage();
+                closeUpgradeModal();
+                renderAll();
+                showToast("Switched to Starter Free Tier.");
+                return;
+            }
+            selectedCheckoutPlan = { name: planName, price };
+            document.getElementById('pricing-view').classList.add('hidden');
+            document.getElementById('checkout-view').classList.remove('hidden');
+            document.getElementById('checkout-title').innerText = `Secure Checkout - ${planName.toUpperCase()} ($${price}/mo)`;
+        }
+        function backToPricing() {
+            const checkoutView = document.getElementById('checkout-view');
+            const pricingView = document.getElementById('pricing-view');
+            if (checkoutView) checkoutView.classList.add('hidden');
+            if (pricingView) pricingView.classList.remove('hidden');
+        }
+        function handleSimulatedPayment(event) {
+            event.preventDefault();
+            // Authorize & apply tier upgrade instantly
+            appState.tier = selectedCheckoutPlan.name;
+            saveToLocalStorage();
+            closeUpgradeModal();
+            renderAll();
+            showToast(`Payment authorized successfully! Upgraded to ${selectedCheckoutPlan.name.toUpperCase()} tier.`);
+        }
+        // Category Rendering & Safeguards
+        function renderCategoryList() {
+            const container = document.getElementById('category-list');
+            if (!container) return;
+            
+            const totalPrompts = appState.prompts.length;
+            const favCount = (appState.favorites || []).length;
+            let html = `
+                <button onclick="selectCategory('Favorites')" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition ${appState.currentCategory === 'Favorites' ? 'bg-amber-600 text-white font-bold shadow-lg shadow-amber-600/20' : 'text-slate-300 hover:bg-slate-800/60'}">
+                    <span class="flex items-center gap-2.5"><i class="fa-solid fa-star text-amber-400 w-4"></i> Favorites</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] ${appState.currentCategory === 'Favorites' ? 'bg-amber-700 text-white' : 'bg-slate-800 text-slate-400'}">${favCount}</span>
+                </button>
+                <button onclick="selectCategory('All')" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition ${appState.currentCategory === 'All' ? 'bg-indigo-600 text-white font-bold shadow-lg shadow-indigo-600/20' : 'text-slate-300 hover:bg-slate-800/60'}">
+                    <span class="flex items-center gap-2.5"><i class="fa-solid fa-layer-group w-4"></i> All Prompts</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] ${appState.currentCategory === 'All' ? 'bg-indigo-700 text-white' : 'bg-slate-800 text-slate-400'}">${totalPrompts}</span>
+                </button>
+            `;
+            appState.categories.forEach(cat => {
+                const count = appState.prompts.filter(p => p.category === cat).length;
+                const isActive = appState.currentCategory === cat;
+                html += `
+                    <div class="flex items-center group relative">
+                        <button onclick="selectCategory('${cat}')" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition ${isActive ? 'bg-indigo-600 text-white font-bold shadow-lg shadow-indigo-600/20' : 'text-slate-300 hover:bg-slate-800/60'}">
+                            <span class="flex items-center gap-2.5 truncate"><i class="fa-solid fa-folder w-4 text-indigo-400"></i> ${cat}</span>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] ${isActive ? 'bg-indigo-700 text-white' : 'bg-slate-800 text-slate-400'}">${count}</span>
+                        </button>
+                        <button onclick="deleteCategory('${cat}')" title="Delete Section" class="absolute right-2 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-400 p-1 text-xs transition z-10">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+        function renderCategoryDropdown() {
+            const select = document.getElementById('prompt-category');
+            if (!select) return;
+            select.innerHTML = appState.categories.map(c => `<option value="${c}">${c}</option>`).join('');
+        }
+        function selectCategory(cat) {
+            appState.currentCategory = cat;
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) searchInput.value = '';
+            appState.searchQuery = '';
+            renderAll();
+        }
+        // Prompts Rendering with Global Search & Fixed Section Scoping
+        function renderPrompts() {
+            const grid = document.getElementById('prompts-grid');
+            const emptyState = document.getElementById('empty-state');
+            const titleEl = document.getElementById('current-category-title');
+            const countEl = document.getElementById('current-category-count');
+            
+            if (!grid || !emptyState || !titleEl || !countEl) return;
+            titleEl.innerText = appState.currentCategory === 'All' ? 'All Prompts' : (appState.currentCategory === 'Favorites' ? 'Starred Favorites' : appState.currentCategory);
+            let filtered = appState.prompts;
+            
+            // Category & Favorites scoping
+            if (appState.currentCategory === 'Favorites') {
+                const favIds = appState.favorites || [];
+                filtered = filtered.filter(p => favIds.includes(p.id));
+            } else if (appState.currentCategory !== 'All') {
+                filtered = filtered.filter(p => p.category === appState.currentCategory);
+            }
+            // Global search query across all sections when typing in search bar
+            if (appState.searchQuery.trim() !== '') {
+                const q = appState.searchQuery.toLowerCase();
+                filtered = appState.prompts.filter(p => p.title.toLowerCase().includes(q) || p.content.toLowerCase().includes(q) || p.category.toLowerCase().includes(q));
+            }
+            countEl.innerText = filtered.length;
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            emptyState.classList.add('hidden');
+            const favIds = appState.favorites || [];
+            grid.innerHTML = filtered.map(p => {
+                const isFav = favIds.includes(p.id);
+                const hasVars = /\[.*?\]/.test(p.content);
+                return `
+                    <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 flex flex-col justify-between hover:border-indigo-500/50 transition duration-300 group shadow-lg">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 text-[10px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider">${p.category}</span>
+                                <div class="flex items-center gap-1.5 opacity-80 group-hover:opacity-100 transition">
+                                    <button onclick="toggleFavorite(${p.id})" title="${isFav ? 'Unstar Favorite' : 'Star Favorite'}" class="p-1.5 text-xs rounded-lg hover:bg-slate-800 ${isFav ? 'text-amber-400' : 'text-slate-400 hover:text-amber-400'}"><i class="fa-solid fa-star"></i></button>
+                                    <button onclick="openEditPromptModal(${p.id})" title="Edit Prompt" class="p-1.5 text-slate-400 hover:text-indigo-400 text-xs rounded-lg hover:bg-slate-800"><i class="fa-solid fa-pen"></i></button>
+                                    <button onclick="deletePrompt(${p.id})" title="Delete Prompt" class="p-1.5 text-slate-400 hover:text-rose-400 text-xs rounded-lg hover:bg-slate-800"><i class="fa-solid fa-trash-can"></i></button>
+                                </div>
+                            </div>
+                            <h3 class="font-bold text-sm text-white mb-2">${p.title}</h3>
+                            <div class="bg-slate-950 border border-slate-800/60 p-3.5 rounded-xl text-xs text-slate-300 font-mono line-clamp-4 mb-4 select-all relative">
+                                ${escapeHtml(p.content)}
+                            </div>
+                        </div>
+                        <div>
+                            ${hasVars ? `<button onclick="openVariableModal(${p.id})" class="w-full mb-2 bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500/20 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition"><i class="fa-solid fa-sliders"></i> Fill & Copy Variables</button>` : ''}
+                            <div class="flex items-center justify-between pt-3 border-t border-slate-800/60">
+                                <span class="text-[10px] text-slate-500 italic"><i class="fa-solid fa-bolt mr-1"></i>Quick Actions</span>
+                                <div class="flex items-center gap-2">
+                                    <button onclick="openSandbox(${p.id})" title="Test in AI Sandbox" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
+                                        <i class="fa-solid fa-wand-magic-sparkles text-indigo-400"></i> Test
+                                    </button>
+                                    <button onclick="copyPromptText('${encodeURIComponent(p.content)}')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shadow">
+                                        <i class="fa-regular fa-copy"></i> Copy
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        // Favorites / Quick Pin Toggle
+        function toggleFavorite(id) {
+            if (!appState.favorites) appState.favorites = [];
+            const idx = appState.favorites.indexOf(id);
+            if (idx > -1) {
+                appState.favorites.splice(idx, 1);
+                showToast("Removed from favorites");
+            } else {
+                appState.favorites.push(id);
+                showToast("Pinned to favorites");
+            }
+            saveToLocalStorage();
+            renderAll();
+        }
+        // Variable / Template Placeholder Modal Logic
+        let activeVariablePromptId = null;
+        function openVariableModal(id) {
+            const p = appState.prompts.find(item => item.id === id);
+            if (!p) return;
+            activeVariablePromptId = id;
+            const matches = p.content.match(/\[(.*?)\]/g);
+            if (!matches) {
+                copyPromptText(encodeURIComponent(p.content));
+                return;
+            }
+            const uniqueVars = [...new Set(matches.map(m => m.slice(1, -1)))];
+            const container = document.getElementById('variable-inputs-container');
+            const modalTitle = document.getElementById('variable-modal-title');
+            const modal = document.getElementById('variable-modal');
+            
+            if (modalTitle) modalTitle.innerText = `Fill Variables: ${p.title}`;
+            if (container) {
+                container.innerHTML = uniqueVars.map(v => `
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-wider text-slate-400 mb-1 font-semibold">[${v}]</label>
+                        <input type="text" data-var-name="${v}" required placeholder="Enter value for ${v}..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500 variable-input">
+                    </div>
+                `).join('');
+            }
+            if (modal) modal.classList.remove('hidden');
+        }
+        function closeVariableModal() {
+            const modal = document.getElementById('variable-modal');
+            if (modal) modal.classList.add('hidden');
+            activeVariablePromptId = null;
+        }
+        function handleCopyFilledVariables(event) {
+            event.preventDefault();
+            const p = appState.prompts.find(item => item.id === activeVariablePromptId);
+            if (!p) return;
+            let filledContent = p.content;
+            const inputs = document.querySelectorAll('.variable-input');
+            inputs.forEach(input => {
+                const varName = input.getAttribute('data-var-name');
+                const val = input.value || `[${varName}]`;
+                filledContent = filledContent.replaceAll(`[${varName}]`, val);
+            });
+            copyPromptText(encodeURIComponent(filledContent));
+            closeVariableModal();
+        }
+        // AI Testing Sandbox Drawer
+        function openSandbox(id) {
+            const p = appState.prompts.find(item => item.id === id);
+            if (!p) return;
+            const titleEl = document.getElementById('sandbox-title');
+            const promptEl = document.getElementById('sandbox-prompt-display');
+            const respEl = document.getElementById('sandbox-response');
+            const drawer = document.getElementById('sandbox-drawer');
+            if (titleEl) titleEl.innerText = `Testing: ${p.title}`;
+            if (promptEl) promptEl.innerText = p.content;
+            if (respEl) respEl.innerHTML = '<span class="text-slate-500 italic">Simulated AI response stream ready. Click Run Simulation below...</span>';
+            if (drawer) drawer.classList.remove('hidden');
+        }
+        function closeSandbox() {
+            const drawer = document.getElementById('sandbox-drawer');
+            if (drawer) drawer.classList.add('hidden');
+        }
+        function simulateSandboxRun() {
+            const respEl = document.getElementById('sandbox-response');
+            if (!respEl) return;
+            respEl.innerHTML = '<span class="text-indigo-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Analyzing prompt structure & generating response...</span>';
+            
+            setTimeout(() => {
+                respEl.innerHTML = `
+                    <div class="space-y-2">
+                        <div class="text-[10px] text-emerald-400 font-bold uppercase"><i class="fa-solid fa-check mr-1"></i>Simulation Successful (Token count: 248)</div>
+                        <p class="text-slate-200">Here is the simulated output based on your secure prompt parameters. All variables and constraints have been successfully parsed and executed in sandbox mode.</p>
+                    </div>
+                `;
+            }, 1200);
+        }
+        // Import Backup JSON Modal
+        function openImportModal() {
+            const modal = document.getElementById('import-modal');
+            if (modal) modal.classList.remove('hidden');
+        }
+        function closeImportModal() {
+            const modal = document.getElementById('import-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+        function handleImportData(event) {
+            event.preventDefault();
+            const fileInput = document.getElementById('import-file');
+            if (!fileInput || !fileInput.files[0]) return;
+            
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const content = e.target.result;
+                    const parsed = JSON.parse(content);
+                    if (parsed.prompts && parsed.categories) {
+                        appState = parsed;
+                        saveToLocalStorage();
+                        renderAll();
+                        closeImportModal();
+                        showToast("Successfully imported repository data!");
+                    } else {
+                        throw new Error("Invalid format");
+                    }
+                } catch (err) {
+                    showToast("Failed to parse import file. Ensure valid JSON backup format.", true);
+                }
+            };
+            reader.readAsText(file);
+        }
+        // Clipboard Copy Utility
+        function copyPromptText(encodedText) {
+            const text = decodeURIComponent(encodedText);
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showToast("Prompt copied successfully! Ready to paste.");
+            } catch (err) {
+                showToast("Failed to copy prompt.", true);
+            }
+            document.body.removeChild(textarea);
+        }
+        // Search Handler
+        function handleSearch(query) {
+            appState.searchQuery = query;
+            renderPrompts();
+        }
+        // Category Creation & Restriction on Free Tier
+        function openCategoryModal() {
+            if (appState.tier === 'free' && appState.categories.length >= 7) {
+                showToast("Free tier section limit reached. Upgrade to create custom sections.", true);
+                openUpgradeModal();
+                return;
+            }
+            const modal = document.getElementById('category-modal');
+            const nameInput = document.getElementById('new-category-name');
+            if (modal) modal.classList.remove('hidden');
+            if (nameInput) {
+                nameInput.value = '';
+                nameInput.focus();
+            }
+        }
+        function closeCategoryModal() {
+            const modal = document.getElementById('category-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+        function handleCreateCategory(event) {
+            event.preventDefault();
+            const nameInput = document.getElementById('new-category-name');
+            if (!nameInput) return;
+            
+            const newName = nameInput.value.trim();
+            if (!newName) return;
+            const exists = appState.categories.some(c => c.toLowerCase() === newName.toLowerCase());
+            if (exists) {
+                showToast("A section with this name already exists.", true);
+                return;
+            }
+            appState.categories.push(newName);
+            saveToLocalStorage();
+            closeCategoryModal();
+            renderAll();
+            showToast(`Section "${newName}" created successfully!`);
+        }
+        // Section Deletion with Warning Safeguard
+        function deleteCategory(catName) {
+            const count = appState.prompts.filter(p => p.category === catName).length;
+            const confirmed = window.confirm(`WARNING: Are you sure you want to delete section "${catName}"?\n\nAll ${count} prompts inside this section will also be permanently deleted. This action cannot be undone.`);
+            
+            if (confirmed) {
+                appState.categories = appState.categories.filter(c => c !== catName);
+                appState.prompts = appState.prompts.filter(p => p.category !== catName);
+                if (appState.currentCategory === catName) {
+                    appState.currentCategory = 'All';
+                }
+                saveToLocalStorage();
+                renderAll();
+                showToast(`Section "${catName}" and its prompts were deleted.`);
+            }
+        }
+        // Prompt Modal & Strict Single-Prompt Block Rule Enforcement
+        function openPromptModal() {
+            const limit = tierLimits[appState.tier];
+            if (appState.prompts.length >= limit) {
+                showToast(`Limit of ${limit} blocks reached for ${appState.tier.toUpperCase()} plan.`, true);
+                openUpgradeModal();
+                return;
+            }
+            const modal = document.getElementById('prompt-modal');
+            const titleEl = document.getElementById('prompt-modal-title');
+            const editId = document.getElementById('edit-prompt-id');
+            const promptTitle = document.getElementById('prompt-title');
+            const promptContent = document.getElementById('prompt-content');
+            const warningEl = document.getElementById('separator-warning');
+            if (modal) modal.classList.remove('hidden');
+            if (titleEl) titleEl.innerText = "Add New Prompt Block";
+            if (editId) editId.value = '';
+            if (promptTitle) promptTitle.value = '';
+            if (promptContent) promptContent.value = '';
+            if (warningEl) warningEl.classList.add('hidden');
+            renderCategoryDropdown();
+        }
+        function openEditPromptModal(id) {
+            const p = appState.prompts.find(item => item.id === id);
+            if (!p) return;
+            const modal = document.getElementById('prompt-modal');
+            const titleEl = document.getElementById('prompt-modal-title');
+            const editId = document.getElementById('edit-prompt-id');
+            const promptTitle = document.getElementById('prompt-title');
+            const promptCategory = document.getElementById('prompt-category');
+            const promptContent = document.getElementById('prompt-content');
+            const warningEl = document.getElementById('separator-warning');
+            if (modal) modal.classList.remove('hidden');
+            if (titleEl) titleEl.innerText = "Edit Prompt Block";
+            if (editId) editId.value = p.id;
+            if (promptTitle) promptTitle.value = p.title;
+            if (promptCategory) promptCategory.value = p.category;
+            if (promptContent) promptContent.value = p.content;
+            if (warningEl) warningEl.classList.add('hidden');
+        }
+        function closePromptModal() {
+            const modal = document.getElementById('prompt-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+        // Strict Single Prompt Validation (Blocks multi-prompts and separators)
+        function validateNoSeparators(textarea) {
+            const val = textarea.value;
+            const warningEl = document.getElementById('separator-warning');
+            const saveBtn = document.getElementById('save-prompt-btn');
+            if (!warningEl || !saveBtn) return;
+            // Detect multiple prompts, delimiters, code barriers or newline sequence patterns indicating multi-prompts
+            const hasSeparator = /(---\n===|\n---\n|\n===\n|### Prompt \d+|Prompt \d+:|Next Prompt:|---{3,}|\*{3,})/i.test(val) || (val.match(/Act as/gi) || []).length > 1;
+            if (hasSeparator) {
+                warningEl.innerHTML = '<i class="fa-solid fa-circle-xmark mr-1"></i>Multiple prompts or delimiter bars detected! Each block must contain strictly ONE standalone prompt.';
+                warningEl.classList.remove('hidden');
+                saveBtn.disabled = true;
+                saveBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                warningEl.classList.add('hidden');
+                saveBtn.disabled = false;
+                saveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+        function handleSavePrompt(event) {
+            event.preventDefault();
+            const idInput = document.getElementById('edit-prompt-id');
+            const titleInput = document.getElementById('prompt-title');
+            const catInput = document.getElementById('prompt-category');
+            const contentInput = document.getElementById('prompt-content');
+            if (!titleInput || !contentInput) return;
+            const id = idInput ? idInput.value : '';
+            const title = titleInput.value.trim();
+            const category = catInput ? catInput.value : 'General';
+            const content = contentInput.value.trim();
+            if (!title || !content) return;
+            // Final safety guard against multi-prompts
+            if (/(---\n===|\n---\n|\n===\n|### Prompt \d+|Prompt \d+:|Next Prompt:)/i.test(content)) {
+                showToast("Multi-prompt blocks are strictly prohibited.", true);
+                return;
+            }
+            if (id) {
+                const p = appState.prompts.find(item => item.id == id);
+                if (p) {
+                    p.title = title;
+                    p.category = category;
+                    p.content = content;
+                }
+                showToast("Prompt block updated successfully!");
+            } else {
+                const limit = tierLimits[appState.tier];
+                if (appState.prompts.length >= limit) {
+                    showToast(`Limit reached for ${appState.tier.toUpperCase()} plan.`, true);
+                    return;
+                }
+                const newPrompt = {
+                    id: Date.now(),
+                    department: appState.department,
+                    title,
+                    category,
+                    content
+                };
+                appState.prompts.push(newPrompt);
+                showToast("New prompt block added successfully!");
+            }
+            saveToLocalStorage();
+            closePromptModal();
+            renderAll();
+        }
+        function deletePrompt(id) {
+            if (window.confirm("Are you sure you want to delete this prompt block?")) {
+                appState.prompts = appState.prompts.filter(p => p.id !== id);
+                if (appState.favorites) {
+                    appState.favorites = appState.favorites.filter(fid => fid !== id);
+                }
+                saveToLocalStorage();
+                renderAll();
+                showToast("Prompt block deleted.");
+            }
+        }
+        // Export and Backup Functionality (JSON / CSV)
+        function exportData(format) {
+            const dataStr = format === 'json' 
+                ? JSON.stringify(appState, null, 2)
+                : convertToCSV(appState.prompts);
+            const mimeType = format === 'json' ? 'application/json' : 'text/csv';
+            const blob = new Blob([dataStr], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `prompt_repository_backup_${Date.now()}.${format}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast(`Backup exported successfully as .${format.toUpperCase()}`);
+        }
+        function convertToCSV(prompts) {
+            const headers = ['ID', 'Department', 'Title', 'Category', 'Content'];
+            const rows = prompts.map(p => [p.id, p.department || 'General', `"${p.title.replace(/"/g, '""')}"`, `"${p.category}"`, `"${p.content.replace(/"/g, '""')}"`]);
+            return [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+        }
+        // Stats & Usage Footer Update
+        function updateUsageStats() {
+            const count = appState.prompts.length;
+            const limit = tierLimits[appState.tier];
+            const limitText = limit === Infinity ? 'Unlimited' : limit;
+            const usageEl = document.getElementById('tier-usage');
+            const sidebarUsageEl = document.getElementById('sidebar-usage-count');
+            const progressBarEl = document.getElementById('sidebar-progress-bar');
+            if (usageEl) usageEl.innerText = `${count} / ${limitText} Blocks`;
+            if (sidebarUsageEl) sidebarUsageEl.innerText = `${count}/${limitText}`;
+            const percent = limit === Infinity ? 15 : Math.min(100, (count / limit) * 100);
+            if (progressBarEl) progressBarEl.style.width = `${percent}%`;
+        }
+        // Upgrade Modal Controls
+        function openUpgradeModal() {
+            const pricingView = document.getElementById('pricing-view');
+            const checkoutView = document.getElementById('checkout-view');
+            const upgradeModal = document.getElementById('upgrade-modal');
+            if (pricingView) pricingView.classList.remove('hidden');
+            if (checkoutView) checkoutView.classList.add('hidden');
+            if (upgradeModal) upgradeModal.classList.remove('hidden');
+        }
+        function closeUpgradeModal() {
+            const upgradeModal = document.getElementById('upgrade-modal');
+            if (upgradeModal) upgradeModal.classList.add('hidden');
+        }
+        // Toast Notification Helper
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            const msgEl = document.getElementById('toast-message');
+            if (!toast || !msgEl) return;
+            msgEl.innerText = message;
+            toast.className = `fixed bottom-6 right-6 z-50 transform translate-y-0 opacity-100 transition-all duration-300 bg-slate-900 border ${isError ? 'border-rose-500 text-rose-300' : 'border-slate-700 text-white'} px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs`;
+            
+            setTimeout(() => {
+                toast.className = `fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 border border-slate-700 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs`;
+            }, 3000);
+        }
+        function escapeHtml(text) {
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
