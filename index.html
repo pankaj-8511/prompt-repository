@@ -875,38 +875,48 @@
             return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
     </script>
-    <!-- Privacy Policy Modal -->
-<div id="privacyModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 text-slate-100 max-w-2xl w-full p-6 rounded-xl border border-slate-700 max-h-[80vh] overflow-y-auto">
-        <h2 class="text-xl font-bold mb-4 text-emerald-400">Privacy Policy for The Lightbulb Workspace</h2>
-        <div class="space-y-3 text-sm text-slate-300">
-            <p><strong>Last updated:</strong> September 27, 2026</p>
-            <p>Welcome to <strong>The Lightbulb Workspace</strong>. We respect your privacy and are committed to protecting any information you share with us.</p>
-            <p><strong>1. Information We Collect:</strong> Prompts and categories you save are stored locally in your browser/device storage. We do not harvest or permanently store your personal prompt content on our servers. Payment information is handled securely through third-party Merchants of Record.</p>
-            <p><strong>2. Data Security:</strong> We implement standard security measures to protect your information, though no transmission over the internet is 100% secure.</p>
+    <!-- PRIVACY POLICY VIEW (Hidden by default) -->
+    <section id="privacyPolicyPage" class="hidden flex-grow max-w-4xl mx-auto p-6 md:p-12 bg-slate-900 text-slate-100 rounded-xl border border-slate-700 my-8 shadow-2xl w-full">
+        <div class="flex justify-between items-center mb-6 border-b border-slate-800 pb-4">
+            <h1 class="text-2xl font-extrabold text-emerald-400">Privacy Policy — The Lightbulb Workspace</h1>
+            <button onclick="showAppMainView()" class="text-xs px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-600 transition">Back to App</button>
         </div>
-        <button onclick="document.getElementById('privacyModal').classList.add('hidden')" class="mt-6 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-medium">Close</button>
-    </div>
-</div>
+        <div class="space-y-6 text-sm text-slate-300 leading-relaxed">
+            <p><strong>Effective Date:</strong> September 27, 2026</p>
+            <p>Welcome to <strong>The Lightbulb Workspace</strong> ("we," "our," or "us"). We are strongly committed to protecting your privacy and ensuring transparency regarding how your data is handled. This Privacy Policy outlines our practices regarding information collection, usage, and security when you use our web application.</p>
+            <h2 class="text-lg font-semibold text-white mt-4">1. Information We Collect and Store</h2>
+            <ul class="list-disc pl-5 space-y-2">
+                <li><strong>Local Browser Storage:</strong> Your prompts, custom categories, and tags are saved locally within your browser's local storage environment (`localStorage`). We do not harvest or permanently store your personal prompt content on centralized remote servers.</li>
+                <li><strong>Payment Data:</strong> All financial transactions and subscription renewals are processed securely through third-party Merchant of Record providers (such as Gumroad/PayPal). We do not collect or store your credit card or banking credentials.</li>
+            </ul>
+            <h2 class="text-lg font-semibold text-white mt-4">2. Data Security Measures</h2>
+            <p>We implement robust industry-standard security protocols to protect your interactions with our web application, though no transmission over the Internet is 100% secure.</p>
+        </div>
+    </section>
 
-<!-- Terms of Service Modal -->
-<div id="termsModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 text-slate-100 max-w-2xl w-full p-6 rounded-xl border border-slate-700 max-h-[80vh] overflow-y-auto">
-        <h2 class="text-xl font-bold mb-4 text-emerald-400">Terms of Service for The Lightbulb Workspace</h2>
-        <div class="space-y-3 text-sm text-slate-300">
-            <p><strong>Last updated:</strong> September 27, 2026</p>
-            <p>Welcome to <strong>The Lightbulb Workspace</strong>. By using our application, you agree to be bound by these Terms of Service.</p>
-            <p><strong>1. Subscriptions:</strong> Paid subscriptions (Home or Enterprise) renew automatically on a recurring monthly basis unless canceled prior to renewal.</p>
-            <p><strong>2. Intellectual Property:</strong> You retain full ownership of all prompts and data you input. The software and design of The Lightbulb Workspace remain our exclusive property.</p>
+    <!-- TERMS OF SERVICE VIEW (Hidden by default) -->
+    <section id="termsOfServicePage" class="hidden flex-grow max-w-4xl mx-auto p-6 md:p-12 bg-slate-900 text-slate-100 rounded-xl border border-slate-700 my-8 shadow-2xl w-full">
+        <div class="flex justify-between items-center mb-6 border-b border-slate-800 pb-4">
+            <h1 class="text-2xl font-extrabold text-emerald-400">Terms of Service — The Lightbulb Workspace</h1>
+            <button onclick="showAppMainView()" class="text-xs px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-600 transition">Back to App</button>
         </div>
-        <button onclick="document.getElementById('termsModal').classList.add('hidden')" class="mt-6 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-medium">Close</button>
-    </div>
-</div>
-<footer class="mt-8 text-center text-xs text-slate-500 space-x-4">
-    <button onclick="document.getElementById('privacyModal').classList.remove('hidden')" class="hover:underline">Privacy Policy</button>
-    <span>&bull;</span>
-    <button onclick="document.getElementById('termsModal').classList.remove('hidden')" class="hover:underline">Terms of Service</button>
-</footer>
+        <div class="space-y-6 text-sm text-slate-300 leading-relaxed">
+            <p><strong>Effective Date:</strong> September 27, 2026</p>
+            <p>Please read these Terms of Service ("Terms") carefully before accessing or using <strong>The Lightbulb Workspace</strong>. By utilizing our software, you agree to be legally bound by these Terms.</p>
+            <h2 class="text-lg font-semibold text-white mt-4">1. Subscriptions and Billing</h2>
+            <p>Paid subscriptions (Pro or Enterprise tiers) are billed in advance on a recurring monthly or annual basis and renew automatically unless canceled prior to the renewal date.</p>
+            <h2 class="text-lg font-semibold text-white mt-4">2. Intellectual Property Rights</h2>
+            <p>You retain 100% ownership and full intellectual property rights over all custom prompts and personal data you input into your workspace. The underlying software design of The Lightbulb Workspace remains our exclusive property.</p>
+        </div>
+    </section>
+<!-- FOOTER -->
+    <footer class="mt-auto text-center text-xs text-slate-500 space-x-4 border-t border-slate-800 py-6">
+        <button onclick="showPrivacyPage()" class="hover:text-emerald-400 transition">Privacy Policy</button>
+        <span>&bull;</span>
+        <button onclick="showTermsPage()" class="hover:text-emerald-400 transition">Terms of Service</button>
+        <span>&bull;</span>
+        <span>&copy; 2026 The Lightbulb Workspace. All rights reserved.</span>
+    </footer>
 <!-- Upgrade Plan & Secure Checkout Modal -->
     <button onclick="openUpgradeModal()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold px-4 py-2 rounded-lg text-xs transition shadow-lg shadow-amber-500/10">Upgrade Plan</button>
 <div id="upgrade-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4">
