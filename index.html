@@ -995,6 +995,24 @@
         <i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
         <span id="toast-message">Prompt copied to clipboard!</span>
     </div>
+    <script>
+    // Existing theme and view switcher functions...
+
+    // Modal Controls
+    function openUpgradeModal() {
+        document.getElementById('upgrade-modal').classList.remove('hidden');
+    }
+
+    function closeUpgradeModal() {
+        document.getElementById('upgrade-modal').classList.add('hidden');
+    }
+
+    // Direct plan selection linking to your live Gumroad product page
+    function selectPlan(planType, price) {
+        // This opens your official Gumroad checkout in a secure new tab
+        window.open('https://pankajster51.gumroad.com/l/lightbulb-pro', '_blank');
+    }
+</script>
     <script>
 </body>
 </html>
